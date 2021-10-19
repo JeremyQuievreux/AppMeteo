@@ -37,6 +37,8 @@ function WeatherStep({step}) {
 
 const styles = StyleSheet.create({
     weatherBlock:{
+        width: 300,
+        height:400,
         backgroundColor: "white",
         margin: 10,
         alignItems:"center",

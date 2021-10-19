@@ -1,6 +1,6 @@
 import React ,{ useEffect, useState } from 'react';
 import * as Location from 'expo-location';
-import { StyleSheet, Text, View , Image } from 'react-native';
+import { StyleSheet, Text, View , Image , Pressable} from 'react-native';
 
 
 function Current() {
@@ -9,17 +9,35 @@ function Current() {
     const [location, setLocation] = useState(null);
     const [errorMsg, setErrorMsg] = useState(null);
 
-    useEffect(() => {
-        (async () => {
+    function getGeoloc() {
+      (async () => {
           let { status } = await Location.requestForegroundPermissionsAsync();
           if (status !== 'granted') {
             setErrorMsg('Permission to access location was denied');
             return;
           }
-    
           let reslocation = await Location.getCurrentPositionAsync({});
           setLocation(reslocation);
         })();
+    }
+
+    function getData() {
+      const lat = location?.coords.latitude;
+        const lon = location?.coords.longitude;
+        console.log(lat);
+        console.log(lon);
+      fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=5419b3c35aed4c8a44139b48aa78dccc&lang=fr`)
+          .then((response) => {
+            return response.json()      
+          } )
+          .then((responseObject) => {
+            setData(responseObject)
+          })
+          .catch((err) => console.log(err))
+    }
+
+    useEffect(() => {
+        getGeoloc();
       }, []);
       
 
@@ -31,36 +49,23 @@ function Current() {
             text = JSON.stringify(location);
         }
 
-        
-    
-    /* useEffect(() => {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?q=Nice&units=metric&appid=5419b3c35aed4c8a44139b48aa78dccc&lang=fr`)
-        .then((response) => {
-          return response.json()      
-        } )
-        .then((responseObject) => {
-          setData(responseObject)
-        })
-        .catch((err) => console.log(err))
-      }, []); */
-
       if (location !== null && data === null) {
-        const lat = location.coords.latitude;
-        const lon = location.coords.longitude;
-        console.log(lat);
-        console.log(lon);
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=5419b3c35aed4c8a44139b48aa78dccc&lang=fr`)
-        .then((response) => {
-          return response.json()      
-        } )
-        .then((responseObject) => {
-          setData(responseObject)
-        })
-        .catch((err) => console.log(err))
+        getData();
       }
+
+      function handlePress() {
+        console.log("Click");
+        getGeoloc();
+        getData();
+
+      }
+
 
     return (
       <View style={styles.container}>
+        <Pressable style={styles.button} onPress={()=>handlePress()}>
+          <Text style={styles.button_text}>Refresh Géoloc</Text>
+        </Pressable>
         <Image
         style={styles.icon}
         source={{
@@ -75,6 +80,17 @@ function Current() {
 }
 
 const styles = StyleSheet.create({
+  button:{
+    backgroundColor: "darkred",
+    padding: 10,
+    width:"60%",
+    borderRadius: 20
+  },
+  button_text:{
+    color: "white",
+    fontSize: 30,
+    textAlign:"center",
+  },
   container: {
     flex: 1,
     backgroundColor: 'lightblue',
